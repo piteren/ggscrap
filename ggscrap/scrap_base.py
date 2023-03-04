@@ -28,8 +28,8 @@ HEADERS = [
 
 # waits for a connection
 def wait_for_connection(
-        url=    'http://ident.me/',
-        logger= None):
+        url: URL=   'http://ident.me/',
+        logger=     None):
 
     while True:
         response = None
