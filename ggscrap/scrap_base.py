@@ -2,6 +2,7 @@ from bs4 import BeautifulSoup
 import requests
 import requests_html
 from requests_html import HTMLSession
+import time
 from typing import Optional, List, Dict
 import urllib
 
@@ -24,6 +25,23 @@ HEADERS = [
     },
 ]
 
+
+# waits for a connection
+def wait_for_connection(
+        url=    'http://ident.me/',
+        logger= None):
+
+    while True:
+        response = None
+        try:
+            response = requests.get(url=url, timeout=5)
+            if logger: logger.info(f'waiting for connection, got: {response}')
+        except Exception as e:
+            if logger: logger.warning(f'got connection exception: {e}')
+        if response and response.status_code == 200:
+            if logger: logger.info(f'got nice connection!')
+            break
+        time.sleep(5)
 
 # tries to download RESPONSE from URL
 def download_response(
