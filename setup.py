@@ -9,7 +9,7 @@ def get_requirements():
 
 setup(
     name=               'ggscrap',
-    version=            'v0.1.0',
+    version=            'v0.1.1',
     url=                'https://github.com/piteren/ggscrap.git',
     author=             'Piotr Niewinski',
     author_email=       'pioniewinski@gmail.com',

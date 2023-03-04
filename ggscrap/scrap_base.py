@@ -28,23 +28,23 @@ HEADERS = [
 # tries to download RESPONSE from URL
 def download_response(
         url: URL,
-        logger,
         header: Optional[Dict]= None,
-        proxy: Optional[str]=   None) -> Optional[RESPONSE]:
+        proxy: Optional[str]=   None,
+        logger=                 None) -> Optional[RESPONSE]:
     try:
         session = HTMLSession()
         proxies = {'http': f'http://{proxy}'} if proxy else None
         response = session.get(url, headers=header, proxies=proxies)
-        logger.debug(f'download_response() got response: "{response}" from url: {url}, header: {header}, proxy: {proxy}')
+        if logger: logger.debug(f'download_response() got response: "{response}" from url: {url}, header: {header}, proxy: {proxy}')
         response.session = session
         return response
     except Exception as e:
         msg = f'download_response() got exception: "{e}", url: {url}, header: {header}, proxy: {proxy}'
-        logger.warning(msg)
+        if logger: logger.warning(msg)
         return None
 
 # extracts sub-urls from RESPONSE
-def extract_subURLs(response: RESPONSE, logger) -> List[URL]:
+def extract_subURLs(response: RESPONSE, logger=None) -> List[URL]:
     try:
         html = requests_html.HTML(
             session=            HTMLSession(),
@@ -54,7 +54,7 @@ def extract_subURLs(response: RESPONSE, logger) -> List[URL]:
         return list(html.absolute_links)
     except Exception as e:
         msg = f'extract_subURLs() got exception: "{e}"'
-        logger.warning(msg)
+        if logger: logger.warning(msg)
         return []
 
 # filters given URLs removes those containing any filter before first /
