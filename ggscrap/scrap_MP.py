@@ -5,7 +5,7 @@ import random
 import time
 from typing import Optional, List, Dict
 
-from pyscrapy.scrap_base import URL, download_response
+from ggscrap.scrap_base import URL, download_response
 
 RESPONSE_CODES = {
     'response.200': 'OK',
