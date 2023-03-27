@@ -112,8 +112,8 @@ class MPScrapper(OMPRunner):
             self,
             urls: List[URL],
             max_time: Optional[int]=    None,   # max num minutes for download()
-            #TODO: monitor responses codes, retry blocked with proxies
-            retry: Optional[int]=       2,      # number of retries for 429
+            # TODO: monitor responses codes, retry blocked with proxies
+            # retry: Optional[int]=       2,      # number of retries for 429
     ) -> List[dict]:
 
         self.logger.info(f'MPScrapper is starting to download RESPONSES for {len(urls)} urls')

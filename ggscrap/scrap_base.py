@@ -26,11 +26,19 @@ HEADERS = [
 ]
 
 
-# waits for a connection
-def wait_for_connection(
-        url: URL=   'http://ident.me/',
-        logger=     None):
+class GGScrapException(Exception):
+    pass
 
+
+# waits for a connection, returns True if connected
+def wait_for_connection(
+        url: URL=               'http://ident.me/',
+        logger=                 None,
+        max_sec: Optional[int]= None,
+) -> bool:
+
+    connected = False
+    loop_ix = 0
     while True:
         response = None
         try:
@@ -39,9 +47,16 @@ def wait_for_connection(
         except Exception as e:
             if logger: logger.warning(f'got connection exception: {e}')
         if response and response.status_code == 200:
+            connected = True
             if logger: logger.info(f'got nice connection!')
             break
         time.sleep(5)
+
+        loop_ix += 1
+        if max_sec is not None and max_sec <= loop_ix * 5:
+            break
+
+    return connected
 
 # tries to download RESPONSE from URL
 def download_response(
@@ -62,7 +77,7 @@ def download_response(
         return None
 
 # extracts sub-urls from RESPONSE
-def extract_subURLs(response: RESPONSE, logger=None) -> List[URL]:
+def extract_subURLs(response:RESPONSE, logger=None) -> List[URL]:
     try:
         html = requests_html.HTML(
             session=            HTMLSession(),
@@ -75,20 +90,21 @@ def extract_subURLs(response: RESPONSE, logger=None) -> List[URL]:
         if logger: logger.warning(msg)
         return []
 
-# filters given URLs removes those containing any filter before first /
+# extracts words from the url base
+def get_head_words(url:URL) -> List[str]:
+    url = url.replace('https://','')
+    url = url.replace('http://', '')
+    head = url.split('/')[0]
+    head = head.split('.')
+    head.pop(-1) # remove domain
+    if 'www' in head: head.remove('www')
+    return head
+
+# filters given URLs, removes those containing any filter before first /
 def filter_URLs(
         urls: List[URL],
         filters: List[str] # filter is a str, words space separated, like 'maps google', if both are in URL before / <- filter matches and URL is filtered out
 ) -> List[URL]:
-
-    def get_head_words(url:URL) -> List[str]:
-        url = url.replace('https://','')
-        url = url.replace('http://', '')
-        head = url.split('/')[0]
-        head = head.split('.')
-        head.pop(-1) # remove domain
-        if 'www' in head: head.remove('www')
-        return head
 
     filters_split = [f.split() for f in filters]
     filtered = []
@@ -110,10 +126,10 @@ def filter_URLs(
 
 # extracts text from RESPONSE
 def extract_text(
-        response:RESPONSE,
-        logger,
+        response: RESPONSE,
         separator=      '\n',
         encode_decode=  True,
+        logger=         None,
 ) -> Optional[str]:
     try:
         soup = BeautifulSoup(response.text, 'html.parser')
@@ -124,9 +140,11 @@ def extract_text(
         return text
     except Exception as e:
         msg = f'get_texts() got exception: "{e}"'
-        logger.warning(msg)
+        if logger: logger.warning(msg)
         return None
 
 # builds google search URL for given query
 def build_google_url(query:str) -> str:
+    if not query:
+        raise GGScrapException('cannot build google url for empty query')
     return f'https://www.google.com/search?q={urllib.parse.quote_plus(query)}'
